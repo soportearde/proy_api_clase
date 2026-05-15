@@ -1,0 +1,65 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 fw-bold"><i class="bi bi-card-list text-primary me-2"></i> Gestión de Peticiones</h2>
+    <span class="badge bg-primary fs-6 shadow-sm">Total: {{ peticiones().length }}</span>
+</div>
+
+@if (cargando()) {
+    <div class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted fw-bold">Cargando peticiones...</p>
+    </div>
+} @else {
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-3">ID</th>
+                            <th scope="col">Título</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Firmas</th>
+                            <th scope="col" class="text-center pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of peticiones(); track item.id) {
+                            <tr>
+                                <td class="ps-3 fw-bold text-muted">{{ item.id }}</td>
+                                <td class="fw-semibold">{{ item.titulo }}</td>
+                                <td>
+                                    <span class="badge"
+                                          [class.bg-warning]="item.estado === 'pendiente' || item.estado === 'pending'"
+                                          [class.text-dark]="item.estado === 'pendiente' || item.estado === 'pending'"
+                                          [class.bg-success]="item.estado === 'aceptada'"
+                                          [class.bg-danger]="item.estado === 'rechazada'">
+                                        {{ item.estado | uppercase }}
+                                    </span>
+                                </td>
+                                <td><i class="bi bi-pen me-1 text-muted"></i> {{ item.firmas_count || 0 }}</td>
+                                <td class="text-center pe-3">
+                                    <div class="d-flex gap-2 justify-content-center" role="group">
+                                        <a [routerLink]="['/admin/peticiones', item.id]" class="btn btn-sm btn-primary text-white" title="Ver">
+                                            Ver
+                                        </a>
+                                        <a [routerLink]="['/admin/peticiones/edit', item.id]" class="btn btn-sm btn-warning text-white" title="Editar">
+                                            Editar
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger text-white"
+                                                (click)="eliminarPeticion(item.id)" title="Borrar">
+                                            Borrar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        } @empty {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No hay peticiones registradas.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

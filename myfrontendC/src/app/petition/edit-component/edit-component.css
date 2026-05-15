@@ -1,0 +1,5 @@
+.petition-thumb {
+    inline-size: 100px;
+    block-size: 100px;
+    object-fit: cover;
+}

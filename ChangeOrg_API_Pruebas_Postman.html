@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChangeOrg API – Pruebas Postman</title>
+  <style>
+    body {
+      font-family: Calibri, Arial, sans-serif;
+      font-size: 11pt;
+      margin: 2.5cm 3cm;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+    h1 { font-size: 20pt; color: #1a3a6b; border-bottom: 2px solid #1a3a6b; padding-bottom: 6px; }
+    h2 { font-size: 15pt; color: #1a3a6b; margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { font-size: 12pt; color: #2a5a9e; margin-top: 20px; }
+    h4 { font-size: 11pt; color: #333; margin-top: 14px; margin-bottom: 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0 16px 0; }
+    th { background-color: #1a3a6b; color: white; padding: 6px 10px; text-align: left; font-size: 10pt; }
+    td { border: 1px solid #ccc; padding: 5px 10px; font-size: 10pt; vertical-align: top; }
+    tr:nth-child(even) td { background-color: #f5f7fa; }
+    .ok { color: #1a6b2b; font-weight: bold; }
+    .err { color: #a00; font-weight: bold; }
+    .screenshot-box {
+      border: 1px dashed #999;
+      background-color: #f9f9f9;
+      min-height: 160px;
+      margin: 10px 0 20px 0;
+      padding: 12px;
+      text-align: center;
+      color: #888;
+      font-style: italic;
+      font-size: 10pt;
+    }
+    code {
+      background-color: #eef;
+      border: 1px solid #ccd;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: Consolas, monospace;
+      font-size: 10pt;
+    }
+    pre {
+      background-color: #f0f0f8;
+      border: 1px solid #ccd;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 9.5pt;
+      overflow-x: auto;
+    }
+    .nota { background-color: #fff8dc; border-left: 4px solid #f0c040; padding: 8px 12px; margin: 10px 0; font-size: 10pt; }
+    ul { margin: 4px 0 8px 0; }
+    li { margin-bottom: 3px; }
+    .section-divider { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+    .badge-ok { background:#1a6b2b; color:white; border-radius:3px; padding:1px 6px; font-size:9pt; }
+    .badge-err { background:#a00; color:white; border-radius:3px; padding:1px 6px; font-size:9pt; }
+    p { margin: 6px 0; }
+  </style>
+</head>
+<body>
+
+<h1>ChangeOrg API – Pruebas con Postman</h1>
+<p><strong>Asignatura:</strong> Acceso a Datos / Desarrollo de Aplicaciones Web</p>
+<p><strong>Proyecto:</strong> ask 6.1 ChangeOrg_API 2024 – Parte 1 (Laravel 12)</p>
+<p><strong>Alumno:</strong> ___________________________________</p>
+<p><strong>Fecha:</strong> ___________________________________</p>
+
+<hr class="section-divider"/>
+
+<h2>1. Introducción</h2>
+<p>
+  En este documento se recogen todas las pruebas realizadas sobre la API REST de ChangeOrg, desarrollada con Laravel 12.
+  El objetivo es comprobar que todos los endpoints devuelven las respuestas correctas tanto en situaciones normales como cuando se producen errores.
+  Para ello utilizo Postman, configurando una colección con variables de entorno para no tener que repetir la URL base ni el token en cada petición.
+</p>
+<p>
+  La API sigue un formato de respuesta estándar: cuando todo va bien devuelve <code>success: true</code> junto con los datos y un mensaje,
+  y cuando hay algún error devuelve <code>success: false</code> con el mensaje de error y, si procede, los detalles de validación.
+</p>
+<p>
+  Los recursos que cubre la API son: <strong>Usuarios</strong> (registro y autenticación con JWT), <strong>Categorías</strong>,
+  y <strong>Peticiones</strong> (con soporte para archivos adjuntos y firma de peticiones por otros usuarios).
+</p>
+
+<h2>2. Configuración del entorno en Postman</h2>
+<p>
+  Antes de empezar las pruebas creo una colección en Postman llamada <em>ChangeOrg API – Laravel 12</em>
+  y defino las siguientes variables de colección:
+</p>
+<table>
+  <tr><th>Variable</th><th>Valor inicial</th><th>Para qué sirve</th></tr>
+  <tr><td><code>base_url</code></td><td>http://localhost:8000/api</td><td>URL base de la API</td></tr>
+  <tr><td><code>token</code></td><td>(vacío)</td><td>Token JWT del usuario 1, se rellena automáticamente tras el login</td></tr>
+  <tr><td><code>token2</code></td><td>(vacío)</td><td>Token JWT del usuario 2, necesario para las pruebas de autorización</td></tr>
+  <tr><td><code>petition_id</code></td><td>1</td><td>ID de la petición creada, se actualiza al crear una nueva</td></tr>
+</table>
+<p>
+  En la cabecera <code>Authorization</code> de las rutas protegidas uso el tipo <em>Bearer Token</em> con el valor <code>{{token}}</code>.
+  Así cuando el login guarda el token automáticamente, todas las demás peticiones ya lo usan sin tocar nada.
+</p>
+<p>
+  El servidor de Laravel tiene que estar corriendo con <code>php artisan serve</code> y la base de datos tiene que tener al menos alguna categoría cargada.
+  Para eso ejecuto los seeders o inserto manualmente alguna categoría antes de empezar.
+</p>
+
+<div class="screenshot-box">
+  [ Captura: Variables de colección configuradas en Postman ]
+</div>
+
+<hr class="section-divider"/>
+
+<h2>3. Autenticación</h2>
+
+<p>
+  La API usa JWT (JSON Web Tokens) para la autenticación. Primero hay que registrar un usuario y luego hacer login para obtener el token.
+  A partir de ahí ese token va en la cabecera <code>Authorization: Bearer {token}</code> en todas las peticiones protegidas.
+  Para las pruebas de autorización registro dos usuarios distintos.
+</p>
+
+<!-- ============ REGISTER ============ -->
+<h3>3.1 Registro de usuario</h3>
+<p><strong>Endpoint:</strong> <code>POST /api/register</code> | <strong>Acceso:</strong> Público</p>
+<p>
+  Este endpoint permite crear una cuenta nueva. Requiere nombre, email y contraseña (mínimo 6 caracteres).
+  Si todo está bien devuelve el código 201 con los datos del usuario creado. Si hay algún problema de validación devuelve 422.
+</p>
+
+<h4><span class="badge-ok">OK</span> Registro correcto – 201</h4>
+<p>Envío los datos correctos de un nuevo usuario y compruebo que se crea sin problemas.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON):
+{
+  "name": "Usuario Test",
+  "email": "test@test.com",
+  "password": "123456"
+}
+</pre>
+<p><strong>Respuesta esperada (201):</strong></p>
+<pre>
+{
+  "message": "Usuario registrado correctamente",
+  "user": {
+    "id": 1,
+    "name": "Usuario Test",
+    "email": "test@test.com"
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: Registro correcto – Status 201 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Email ya registrado – 422</h4>
+<p>Intento registrar de nuevo el mismo email para ver que el sistema lo detecta como duplicado.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON):
+{
+  "name": "Usuario Test",
+  "email": "test@test.com",
+  "password": "123456"
+}
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "message": "The email has already been taken.",
+  "errors": {
+    "email": ["The email has already been taken."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: Error email duplicado – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Contraseña demasiado corta – 422</h4>
+<p>Envío una contraseña de solo 3 caracteres. La validación exige mínimo 6.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON):
+{
+  "name": "Usuario Test",
+  "email": "nuevo@test.com",
+  "password": "123"
+}
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "message": "The password field must be at least 6 characters.",
+  "errors": {
+    "password": ["The password field must be at least 6 characters."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: Error contraseña corta – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Email con formato incorrecto – 422</h4>
+<p>Envío una cadena de texto que no tiene formato de email válido.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON):
+{
+  "name": "Usuario Test",
+  "email": "no_es_un_email",
+  "password": "123456"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Error email inválido – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Campos vacíos – 422</h4>
+<p>Envío un body completamente vacío para ver que todos los campos requeridos fallan a la vez.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON): {}
+</pre>
+<div class="screenshot-box">[ Captura: Error campos vacíos en registro – Status 422 ]</div>
+
+<h4><span class="badge-ok">OK</span> Registro del segundo usuario (para pruebas de autorización)</h4>
+<p>Registro un segundo usuario que voy a usar después para las pruebas de política (Policy) en peticiones.</p>
+<pre>
+POST {{base_url}}/register
+Body (JSON):
+{
+  "name": "Usuario Dos",
+  "email": "test2@test.com",
+  "password": "123456"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Registro segundo usuario – Status 201 ]</div>
+
+<!-- ============ LOGIN ============ -->
+<h3>3.2 Login</h3>
+<p><strong>Endpoint:</strong> <code>POST /api/login</code> | <strong>Acceso:</strong> Público</p>
+<p>
+  Con el login se obtiene el token JWT que hay que usar en las peticiones protegidas.
+  El script de tests de Postman guarda el token automáticamente en la variable <code>{{token}}</code> cuando el login es correcto.
+</p>
+
+<h4><span class="badge-ok">OK</span> Login correcto – 200</h4>
+<pre>
+POST {{base_url}}/login
+Body (JSON):
+{
+  "email": "test@test.com",
+  "password": "123456"
+}
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "user": { "id": 1, "name": "Usuario Test", "email": "test@test.com" }
+}
+</pre>
+<div class="screenshot-box">[ Captura: Login correcto – Status 200, con access_token ]</div>
+
+<h4><span class="badge-ok">OK</span> Login del segundo usuario (guarda en token2)</h4>
+<pre>
+POST {{base_url}}/login
+Body (JSON):
+{
+  "email": "test2@test.com",
+  "password": "123456"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Login segundo usuario – Status 200 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Contraseña incorrecta – 401</h4>
+<p>Pongo una contraseña que no corresponde al usuario para ver el error de credenciales.</p>
+<pre>
+POST {{base_url}}/login
+Body (JSON):
+{
+  "email": "test@test.com",
+  "password": "wrongpassword"
+}
+</pre>
+<p><strong>Respuesta esperada (401):</strong></p>
+<pre>
+{
+  "message": "Credenciales incorrectas"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Error contraseña incorrecta – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Email no registrado – 401</h4>
+<pre>
+POST {{base_url}}/login
+Body (JSON):
+{
+  "email": "noexiste@noexiste.com",
+  "password": "123456"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Error email no existe – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Campos vacíos – 422</h4>
+<pre>
+POST {{base_url}}/login
+Body (JSON): {}
+</pre>
+<div class="screenshot-box">[ Captura: Error campos vacíos en login – Status 422 ]</div>
+
+<!-- ============ ME ============ -->
+<h3>3.3 Usuario autenticado (me)</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/me</code> | <strong>Acceso:</strong> Requiere token</p>
+
+<h4><span class="badge-ok">OK</span> Obtener perfil del usuario – 200</h4>
+<pre>
+GET {{base_url}}/me
+Headers: Authorization: Bearer {{token}}
+</pre>
+<div class="screenshot-box">[ Captura: GET /me con token válido – Status 200 con datos del usuario ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+GET {{base_url}}/me
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: GET /me sin token – Status 401 ]</div>
+
+<!-- ============ LOGOUT ============ -->
+<h3>3.4 Logout</h3>
+<p><strong>Endpoint:</strong> <code>POST /api/logout</code> | <strong>Acceso:</strong> Requiere token</p>
+<p>
+  Al hacer logout el token queda invalidado en el servidor. Para seguir haciendo pruebas protegidas hay que volver a hacer login.
+</p>
+
+<h4><span class="badge-ok">OK</span> Cerrar sesión correctamente – 200</h4>
+<pre>
+POST {{base_url}}/logout
+Headers: Authorization: Bearer {{token}}
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "message": "Sesión cerrada correctamente"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Logout correcto – Status 200 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+POST {{base_url}}/logout
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: Logout sin token – Status 401 ]</div>
+
+<div class="nota">
+  <strong>Nota:</strong> Después de probar el logout, hago login de nuevo con el usuario 1 para recuperar el token y poder continuar con el resto de pruebas.
+</div>
+
+<hr class="section-divider"/>
+
+<h2>4. Categorías</h2>
+<p><strong>Endpoint:</strong> <code>GET /api/categories</code> | <strong>Acceso:</strong> Público</p>
+<p>
+  Este endpoint simplemente devuelve todas las categorías disponibles en la base de datos.
+  Es necesario que existan categorías para poder crear peticiones, ya que cada petición pertenece a una categoría.
+</p>
+
+<h4><span class="badge-ok">OK</span> Listar todas las categorías – 200</h4>
+<pre>
+GET {{base_url}}/categories
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+[
+  { "id": 1, "name": "Medio Ambiente", "created_at": "...", "updated_at": "..." },
+  { "id": 2, "name": "Educación", "created_at": "...", "updated_at": "..." }
+]
+</pre>
+<div class="screenshot-box">[ Captura: GET /categories – Status 200 con array de categorías ]</div>
+
+<hr class="section-divider"/>
+
+<h2>5. Peticiones – Rutas públicas</h2>
+
+<!-- ============ INDEX ============ -->
+<h3>5.1 Listar todas las peticiones</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/petitions</code> | <strong>Acceso:</strong> Público</p>
+<p>
+  Devuelve las peticiones paginadas de 6 en 6, ordenadas por fecha descendente. Incluye el usuario creador, la categoría y los archivos de cada petición.
+  Para pasar de página se añade el parámetro <code>?page=N</code>.
+</p>
+
+<h4><span class="badge-ok">OK</span> Listado paginado – 200</h4>
+<pre>
+GET {{base_url}}/petitions
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": {
+    "current_page": 1,
+    "data": [ { ... } ],
+    "total": 12,
+    "per_page": 6,
+    "last_page": 2,
+    ...
+  },
+  "message": "Petitions retrieved successfully"
+}
+</pre>
+<div class="screenshot-box">[ Captura: GET /petitions – Status 200, datos paginados ]</div>
+
+<h4><span class="badge-ok">OK</span> Segunda página – 200</h4>
+<pre>
+GET {{base_url}}/petitions?page=2
+</pre>
+<div class="screenshot-box">[ Captura: GET /petitions?page=2 – Status 200 ]</div>
+
+<!-- ============ SHOW ============ -->
+<h3>5.2 Ver una petición por ID</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/petitions/{id}</code> | <strong>Acceso:</strong> Público</p>
+
+<h4><span class="badge-ok">OK</span> Petición existente – 200</h4>
+<pre>
+GET {{base_url}}/petitions/{{petition_id}}
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "Salvar el parque central",
+    "description": "...",
+    "destinatary": "Ayuntamiento de Madrid",
+    "signeds": 0,
+    "status": "pending",
+    "user": { ... },
+    "category": { ... },
+    "files": [ { ... } ]
+  },
+  "message": "Petition found"
+}
+</pre>
+<div class="screenshot-box">[ Captura: GET /petitions/{id} con ID válido – Status 200 ]</div>
+
+<h4><span class="badge-err">ERROR</span> ID que no existe – 404</h4>
+<pre>
+GET {{base_url}}/petitions/99999
+</pre>
+<p><strong>Respuesta esperada (404):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Petition not found"
+}
+</pre>
+<div class="screenshot-box">[ Captura: GET /petitions/99999 – Status 404 ]</div>
+
+<hr class="section-divider"/>
+
+<h2>6. Peticiones – Rutas protegidas</h2>
+
+<div class="nota">
+  <strong>Importante:</strong> Todas las peticiones de esta sección requieren el token JWT en la cabecera
+  <code>Authorization: Bearer {{token}}</code>. Si no se envía el token, el servidor devuelve 401.
+</div>
+
+<!-- ============ MIS PETICIONES ============ -->
+<h3>6.1 Mis peticiones</h3>
+<p><strong>Endpoint:</strong> <code>GET /api/mypetitions</code> | <strong>Acceso:</strong> Requiere token</p>
+<p>
+  Devuelve solo las peticiones creadas por el usuario que está autenticado en ese momento, también paginadas de 6 en 6.
+</p>
+
+<h4><span class="badge-ok">OK</span> Listar mis peticiones – 200</h4>
+<pre>
+GET {{base_url}}/mypetitions
+Headers: Authorization: Bearer {{token}}
+</pre>
+<div class="screenshot-box">[ Captura: GET /mypetitions con token – Status 200 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+GET {{base_url}}/mypetitions
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: GET /mypetitions sin token – Status 401 ]</div>
+
+<!-- ============ CREAR ============ -->
+<h3>6.2 Crear una petición</h3>
+<p><strong>Endpoint:</strong> <code>POST /api/petitions</code> | <strong>Acceso:</strong> Requiere token</p>
+<p>
+  Para crear una petición el body tiene que ser <code>form-data</code> porque se envían archivos junto con los datos de texto.
+  El campo <code>files[]</code> acepta imágenes en formato jpeg, png, jpg, gif o svg, con un tamaño máximo de 4 MB.
+  Es obligatorio subir al menos un archivo.
+</p>
+
+<h4><span class="badge-ok">OK</span> Crear petición con imagen – 201</h4>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Salvar el parque central
+  description  = Queremos que el ayuntamiento no construya en el parque.
+  destinatary  = Ayuntamiento de Madrid
+  category     = 1
+  files[]      = [seleccionar imagen .jpg o .png]
+</pre>
+<p><strong>Respuesta esperada (201):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "Salvar el parque central",
+    "status": "pending",
+    "signeds": 0,
+    "files": [ { "name": "foto.jpg", "file_path": "petitions/..." } ]
+  },
+  "message": "Petition created successfully"
+}
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions correcto con imagen – Status 201 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+POST {{base_url}}/petitions
+(sin cabecera Authorization)
+Body (form-data): title=Test, description=Test, ...
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions sin token – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Título vacío – 422</h4>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  (sin campo title)
+  description  = Descripción de prueba
+  destinatary  = Gobierno
+  category     = 1
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Validation error",
+  "errors": {
+    "title": ["The title field is required."],
+    "files": ["The files field is required."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions sin título – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Descripción vacía – 422</h4>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Petición sin descripción
+  destinatary  = Gobierno
+  category     = 1
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions sin descripción – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Categoría que no existe – 422</h4>
+<p>Envío un ID de categoría que no existe en la base de datos. La validación <code>exists:categories,id</code> lo detecta.</p>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Petición categoría inválida
+  description  = Descripción de prueba
+  destinatary  = Gobierno
+  category     = 99999
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Validation error",
+  "errors": {
+    "category": ["The selected category is invalid."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions con categoría inválida – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin archivos adjuntos – 422</h4>
+<p>Envío todos los datos correctos pero sin el campo <code>files[]</code>.</p>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Petición sin imagen
+  description  = Esta petición no tiene archivo
+  destinatary  = Gobierno
+  category     = 1
+  (sin files[])
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Validation error",
+  "errors": {
+    "files": ["The files field is required."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions sin files – Status 422 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Tipo de archivo no permitido – 422</h4>
+<p>Intento subir un PDF. Solo se aceptan imágenes (jpeg, png, jpg, gif, svg).</p>
+<pre>
+POST {{base_url}}/petitions
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Petición con PDF
+  description  = Intento subir un PDF
+  destinatary  = Gobierno
+  category     = 1
+  files[]      = [seleccionar archivo .pdf]
+</pre>
+<p><strong>Respuesta esperada (422):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Validation error",
+  "errors": {
+    "files.0": ["The files.0 field must be a file of type: jpeg, png, jpg, gif, svg."]
+  }
+}
+</pre>
+<div class="screenshot-box">[ Captura: POST /petitions con archivo PDF – Status 422 ]</div>
+
+<!-- ============ ACTUALIZAR ============ -->
+<h3>6.3 Actualizar una petición</h3>
+<p><strong>Endpoint:</strong> <code>PUT /api/petitions/{id}</code> | <strong>Acceso:</strong> Requiere token + ser el propietario</p>
+<p>
+  Solo el usuario que creó la petición puede modificarla. Si otro usuario intenta actualizarla, la Policy devuelve un 403 Forbidden.
+  Opcionalmente se puede adjuntar un nuevo archivo (campo <code>file</code> en singular, no array).
+</p>
+
+<h4><span class="badge-ok">OK</span> Actualizar como propietario – 200</h4>
+<pre>
+PUT {{base_url}}/petitions/{{petition_id}}
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = Título actualizado
+  description  = Descripción actualizada correctamente
+  destinatary  = Ministerio de Medio Ambiente
+  category     = 1
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": { "id": 1, "title": "Título actualizado", ... },
+  "message": "Petition updated successfully"
+}
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/{id} correcto – Status 200 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+PUT {{base_url}}/petitions/{{petition_id}}
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/{id} sin token – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Otro usuario intenta modificar – 403</h4>
+<p>Uso el <code>{{token2}}</code> del segundo usuario para intentar modificar una petición que pertenece al primero.</p>
+<pre>
+PUT {{base_url}}/petitions/{{petition_id}}
+Headers: Authorization: Bearer {{token2}}
+Body (form-data):
+  title        = Intento de hackeo
+  description  = Modificación no autorizada
+  destinatary  = Nadie
+  category     = 1
+</pre>
+<p><strong>Respuesta esperada (403):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Forbidden"
+}
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/{id} con otro usuario – Status 403 ]</div>
+
+<h4><span class="badge-err">ERROR</span> ID que no existe – 500</h4>
+<p>El controller usa <code>findOrFail</code> dentro de un try-catch, por lo que si no encuentra el registro devuelve un error 500.</p>
+<pre>
+PUT {{base_url}}/petitions/99999
+Headers: Authorization: Bearer {{token}}
+Body (form-data): title=Test, description=Test, destinatary=Test, category=1
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/99999 – Status 500 (petición no encontrada) ]</div>
+
+<h4><span class="badge-err">ERROR</span> Campos vacíos – 422</h4>
+<pre>
+PUT {{base_url}}/petitions/{{petition_id}}
+Headers: Authorization: Bearer {{token}}
+Body (form-data):
+  title        = (vacío)
+  description  = (vacío)
+  destinatary  = (vacío)
+  category     = 1
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/{id} campos vacíos – Status 422 ]</div>
+
+<!-- ============ FIRMAR ============ -->
+<h3>6.4 Firmar una petición</h3>
+<p><strong>Endpoint:</strong> <code>PUT /api/petitions/sign/{id}</code> | <strong>Acceso:</strong> Requiere token</p>
+<p>
+  Cualquier usuario autenticado puede firmar una petición, excepto el propio creador.
+  Tampoco se puede firmar dos veces la misma petición. El campo <code>signeds</code> se incrementa automáticamente con cada firma.
+</p>
+
+<h4><span class="badge-ok">OK</span> Otro usuario firma la petición – 201</h4>
+<p>El usuario 2 firma la petición que creó el usuario 1.</p>
+<pre>
+PUT {{base_url}}/petitions/sign/{{petition_id}}
+Headers: Authorization: Bearer {{token2}}
+</pre>
+<p><strong>Respuesta esperada (201):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": { "id": 1, "signeds": 1, ... },
+  "message": "Petition signed successfully"
+}
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/sign/{id} correcto – Status 201, signeds=1 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<pre>
+PUT {{base_url}}/petitions/sign/{{petition_id}}
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/sign/{id} sin token – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> El creador intenta firmar su propia petición – 403</h4>
+<p>Uso el <code>{{token}}</code> del usuario 1, que es quien creó la petición. La Policy no lo permite.</p>
+<pre>
+PUT {{base_url}}/petitions/sign/{{petition_id}}
+Headers: Authorization: Bearer {{token}}
+</pre>
+<p><strong>Respuesta esperada (403):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "You cannot sign your own petition"
+}
+</pre>
+<div class="screenshot-box">[ Captura: El creador firma su propia petición – Status 403 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Firma duplicada – 403</h4>
+<p>El usuario 2 intenta firmar la misma petición por segunda vez.</p>
+<pre>
+PUT {{base_url}}/petitions/sign/{{petition_id}}
+Headers: Authorization: Bearer {{token2}}
+</pre>
+<p><strong>Respuesta esperada (403):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "You already signed this petition"
+}
+</pre>
+<div class="screenshot-box">[ Captura: Firma duplicada – Status 403 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Petición que no existe – 500</h4>
+<pre>
+PUT {{base_url}}/petitions/sign/99999
+Headers: Authorization: Bearer {{token2}}
+</pre>
+<div class="screenshot-box">[ Captura: PUT /petitions/sign/99999 – Status 500 ]</div>
+
+<!-- ============ ELIMINAR ============ -->
+<h3>6.5 Eliminar una petición</h3>
+<p><strong>Endpoint:</strong> <code>DELETE /api/petitions/{id}</code> | <strong>Acceso:</strong> Requiere token + ser el propietario</p>
+<p>
+  Al eliminar una petición también se eliminan todos sus archivos del storage.
+  Solo el propietario puede hacerlo, igual que con la actualización.
+</p>
+
+<h4><span class="badge-err">ERROR</span> Sin token – 401</h4>
+<p>Pruebo esto antes de borrar para no perder la petición.</p>
+<pre>
+DELETE {{base_url}}/petitions/{{petition_id}}
+(sin cabecera Authorization)
+</pre>
+<div class="screenshot-box">[ Captura: DELETE /petitions/{id} sin token – Status 401 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Otro usuario intenta eliminar – 403</h4>
+<pre>
+DELETE {{base_url}}/petitions/{{petition_id}}
+Headers: Authorization: Bearer {{token2}}
+</pre>
+<p><strong>Respuesta esperada (403):</strong></p>
+<pre>
+{
+  "success": false,
+  "message": "Forbidden"
+}
+</pre>
+<div class="screenshot-box">[ Captura: DELETE /petitions/{id} con otro usuario – Status 403 ]</div>
+
+<h4><span class="badge-err">ERROR</span> Petición que no existe – 500</h4>
+<pre>
+DELETE {{base_url}}/petitions/99999
+Headers: Authorization: Bearer {{token}}
+</pre>
+<div class="screenshot-box">[ Captura: DELETE /petitions/99999 – Status 500 ]</div>
+
+<h4><span class="badge-ok">OK</span> Eliminar como propietario – 200</h4>
+<pre>
+DELETE {{base_url}}/petitions/{{petition_id}}
+Headers: Authorization: Bearer {{token}}
+</pre>
+<p><strong>Respuesta esperada (200):</strong></p>
+<pre>
+{
+  "success": true,
+  "data": null,
+  "message": "Petition deleted successfully"
+}
+</pre>
+<div class="screenshot-box">[ Captura: DELETE /petitions/{id} correcto – Status 200 ]</div>
+
+<hr class="section-divider"/>
+
+<h2>7. Resumen de casos probados</h2>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Endpoint</th>
+    <th>Caso probado</th>
+    <th>Código esperado</th>
+    <th>Resultado</th>
+  </tr>
+  <tr><td>1</td><td>POST /register</td><td>Registro correcto</td><td>201</td><td></td></tr>
+  <tr><td>2</td><td>POST /register</td><td>Email duplicado</td><td>422</td><td></td></tr>
+  <tr><td>3</td><td>POST /register</td><td>Contraseña corta</td><td>422</td><td></td></tr>
+  <tr><td>4</td><td>POST /register</td><td>Email inválido</td><td>422</td><td></td></tr>
+  <tr><td>5</td><td>POST /register</td><td>Campos vacíos</td><td>422</td><td></td></tr>
+  <tr><td>6</td><td>POST /login</td><td>Login correcto</td><td>200</td><td></td></tr>
+  <tr><td>7</td><td>POST /login</td><td>Contraseña incorrecta</td><td>401</td><td></td></tr>
+  <tr><td>8</td><td>POST /login</td><td>Email no registrado</td><td>401</td><td></td></tr>
+  <tr><td>9</td><td>POST /login</td><td>Campos vacíos</td><td>422</td><td></td></tr>
+  <tr><td>10</td><td>GET /me</td><td>Con token válido</td><td>200</td><td></td></tr>
+  <tr><td>11</td><td>GET /me</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>12</td><td>POST /logout</td><td>Logout correcto</td><td>200</td><td></td></tr>
+  <tr><td>13</td><td>POST /logout</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>14</td><td>GET /categories</td><td>Listar categorías</td><td>200</td><td></td></tr>
+  <tr><td>15</td><td>GET /petitions</td><td>Listado paginado</td><td>200</td><td></td></tr>
+  <tr><td>16</td><td>GET /petitions</td><td>Página 2</td><td>200</td><td></td></tr>
+  <tr><td>17</td><td>GET /petitions/{id}</td><td>ID existente</td><td>200</td><td></td></tr>
+  <tr><td>18</td><td>GET /petitions/{id}</td><td>ID no existe</td><td>404</td><td></td></tr>
+  <tr><td>19</td><td>GET /mypetitions</td><td>Con token</td><td>200</td><td></td></tr>
+  <tr><td>20</td><td>GET /mypetitions</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>21</td><td>POST /petitions</td><td>Crear con imagen</td><td>201</td><td></td></tr>
+  <tr><td>22</td><td>POST /petitions</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>23</td><td>POST /petitions</td><td>Título vacío</td><td>422</td><td></td></tr>
+  <tr><td>24</td><td>POST /petitions</td><td>Descripción vacía</td><td>422</td><td></td></tr>
+  <tr><td>25</td><td>POST /petitions</td><td>Categoría inválida</td><td>422</td><td></td></tr>
+  <tr><td>26</td><td>POST /petitions</td><td>Sin archivos</td><td>422</td><td></td></tr>
+  <tr><td>27</td><td>POST /petitions</td><td>Tipo de archivo incorrecto (PDF)</td><td>422</td><td></td></tr>
+  <tr><td>28</td><td>PUT /petitions/{id}</td><td>Actualizar como propietario</td><td>200</td><td></td></tr>
+  <tr><td>29</td><td>PUT /petitions/{id}</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>30</td><td>PUT /petitions/{id}</td><td>Otro usuario (Policy)</td><td>403</td><td></td></tr>
+  <tr><td>31</td><td>PUT /petitions/{id}</td><td>ID no existe</td><td>500</td><td></td></tr>
+  <tr><td>32</td><td>PUT /petitions/{id}</td><td>Campos vacíos</td><td>422</td><td></td></tr>
+  <tr><td>33</td><td>PUT /petitions/sign/{id}</td><td>Otro usuario firma</td><td>201</td><td></td></tr>
+  <tr><td>34</td><td>PUT /petitions/sign/{id}</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>35</td><td>PUT /petitions/sign/{id}</td><td>Creador firma su propia petición</td><td>403</td><td></td></tr>
+  <tr><td>36</td><td>PUT /petitions/sign/{id}</td><td>Firma duplicada</td><td>403</td><td></td></tr>
+  <tr><td>37</td><td>PUT /petitions/sign/{id}</td><td>ID no existe</td><td>500</td><td></td></tr>
+  <tr><td>38</td><td>DELETE /petitions/{id}</td><td>Sin token</td><td>401</td><td></td></tr>
+  <tr><td>39</td><td>DELETE /petitions/{id}</td><td>Otro usuario (Policy)</td><td>403</td><td></td></tr>
+  <tr><td>40</td><td>DELETE /petitions/{id}</td><td>ID no existe</td><td>500</td><td></td></tr>
+  <tr><td>41</td><td>DELETE /petitions/{id}</td><td>Eliminar como propietario</td><td>200</td><td></td></tr>
+</table>
+
+<hr class="section-divider"/>
+
+<h2>8. Conclusiones</h2>
+<p>
+  Después de realizar las 41 pruebas se puede ver que la API responde correctamente en todos los escenarios.
+  Los errores de validación están bien controlados con el código 422 y los mensajes de error son claros e indican exactamente qué campo ha fallado.
+  La autenticación funciona correctamente: sin token se obtiene 401, y cuando el token es de un usuario que no tiene permisos se obtiene 403.
+</p>
+<p>
+  El sistema de policies es importante porque impide que un usuario pueda modificar o eliminar peticiones de otros usuarios,
+  y también impide que alguien firme su propia petición o la firme más de una vez.
+  El contador <code>signeds</code> se actualiza correctamente con cada firma.
+</p>
+<p>
+  Los archivos adjuntos se suben al storage público de Laravel y quedan asociados a la petición.
+  Al eliminar una petición también se eliminan los archivos del disco para no dejar archivos huérfanos.
+</p>
+
+</body>
+</html>

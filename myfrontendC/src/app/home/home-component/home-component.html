@@ -1,0 +1,62 @@
+<div class="hero-wrapper position-relative">
+    <div class="hero d-flex align-items-start justify-content-center text-center py-5">
+        <div class="container">
+
+            <h1 class="fw-bold mb-3">
+                <span class="d-block display-1 fw-bold">El cambio</span>
+                <span class="d-block display-1 fw-bold">empieza aquí<span class="text-danger">.</span></span>
+            </h1>
+
+            <p class="lead text-secondary mb-4">
+                Únete a <span class="fw-bold text-dark">567.588.723</span> personas impulsando cambios reales en sus comunidades.
+            </p>
+
+            <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mb-4">
+                <a routerLink="/petitions/create" class="btn btn-warning btn-lg fw-bold px-4">Crear una petición</a>
+                <a routerLink="/petitions" class="btn btn-outline-dark btn-lg fw-bold px-4">Ver peticiones</a>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <div class="input-group" style="max-width: 500px;">
+                    <input type="text" [(ngModel)]="searchTerm" name="search"
+                           class="form-control form-control-lg"
+                           placeholder="Buscar peticiones...">
+                    <button (click)="search()" class="btn btn-danger btn-lg">Buscar</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="container py-6 mt-5">
+    <h2 class="fw-bold text-center mb-5">Usar la plataforma de peticiones nº 1 del mundo es muy fácil</h2>
+
+    <div class="row text-center g-4">
+
+        <div class="col-md-4">
+            <div class="p-4 h-100 border rounded shadow-sm">
+                <div class="display-4 text-danger fw-bold mb-2">1</div>
+                <h5 class="fw-bold mb-1">Crea una petición en dos minutos</h5>
+                <p class="mb-0">Más de 2.000 nuevas cada día</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 h-100 border rounded shadow-sm">
+                <div class="display-4 text-danger fw-bold mb-2">2</div>
+                <h5 class="fw-bold mb-1">Consigue apoyo de nuestra gran comunidad</h5>
+                <p class="mb-0">Más de 500.000 firmas al día</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 h-100 border rounded shadow-sm">
+                <div class="display-4 text-danger fw-bold mb-2">3</div>
+                <h5 class="fw-bold mb-1">Llega a los responsables a través de nuestra red</h5>
+                <p class="mb-0">Más de 1.000 notificados al día</p>
+            </div>
+        </div>
+
+    </div>
+</div>

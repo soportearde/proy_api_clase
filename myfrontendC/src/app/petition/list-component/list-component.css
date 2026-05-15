@@ -1,0 +1,5 @@
+.list-image {
+    inline-size: 100%;
+    block-size: 200px;
+    object-fit: cover;
+}

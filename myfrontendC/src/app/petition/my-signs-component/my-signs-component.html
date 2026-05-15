@@ -1,0 +1,52 @@
+<div class="container my-5">
+
+    <h3 class="fw-bold mb-4">Mis firmas</h3>
+
+    @if (loading) {
+        <div class="text-center my-5">
+            <div class="spinner-border text-danger" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    } @else {
+        <div class="row g-4">
+            @for (p of petitions; track p.id) {
+                <div class="col-md-4">
+                    <div class="p-3 shadow-sm rounded border h-100 d-flex flex-column">
+
+                        <div class="text-danger fw-bold small mb-2">
+                            {{ p.category?.name ?? 'Sin categoría' }}
+                        </div>
+
+                        <h5 class="fw-bold">{{ p.title }}</h5>
+
+                        <p class="text-muted flex-grow-1">
+                            {{ p.description | slice:0:120 }}...
+                        </p>
+
+                        <img [src]="p.files && p.files.length > 0
+                                ? API_STORAGE + p.files[0].file_path
+                                : 'assets/no-image.png'"
+                             class="rounded mb-3"
+                             style="width:100%; height:200px; object-fit:cover;"
+                             alt="Imagen de la petición">
+
+                        <a [routerLink]="['/petitions', p.id]" class="btn btn-danger w-100">
+                            Ver petición
+                        </a>
+
+                        <div class="text-muted small mt-2">
+                            Firmada · {{ p.created_at | date:'dd/MM/yyyy' }}
+                        </div>
+
+                    </div>
+                </div>
+            } @empty {
+                <div class="col-12">
+                    <p class="text-center text-muted">Aún no has firmado ninguna petición.</p>
+                </div>
+            }
+        </div>
+    }
+
+</div>

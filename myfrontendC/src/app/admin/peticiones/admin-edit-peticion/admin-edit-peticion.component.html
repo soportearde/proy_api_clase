@@ -1,0 +1,63 @@
+<div class="container-fluid mb-5">
+    <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+        <span class="badge bg-warning text-dark fs-5 me-3"><i class="bi bi-pencil-square"></i> Edición</span>
+        <h2 class="m-0 fw-bold">Editar Petición #{{ id() }}</h2>
+    </div>
+
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()" class="card shadow-sm border-0 p-4">
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Título</label>
+                <input formControlName="titulo" type="text" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Destinatario</label>
+                <input formControlName="destinatario" type="text" class="form-control">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Descripción</label>
+            <textarea formControlName="descripcion" class="form-control" rows="4"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Categoría</label>
+                <select formControlName="categoria_id" class="form-select">
+                    <option value="">Selecciona categoría</option>
+                    @for (cat of categorias(); track cat.id) {
+                        <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Estado</label>
+                <select formControlName="estado" class="form-select">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="aceptada">Aceptada</option>
+                    <option value="rechazada">Rechazada</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Imagen (opcional)</label>
+            <input type="file" (change)="onFileSelected($event)" class="form-control" accept="image/*">
+            @if (peticion?.files && peticion.files.length > 0) {
+                <small class="text-muted">Ya tiene {{ peticion.files.length }} imagen(es) asociada(s).</small>
+            }
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+            <a routerLink="/admin/peticiones" class="btn btn-outline-dark">Cancelar</a>
+            <button type="submit" [disabled]="itemForm.invalid || loading()" class="btn btn-success px-4 fw-bold">
+                @if (loading()) { <span>Guardando...</span> } @else { <span>Guardar Cambios</span> }
+            </button>
+        </div>
+
+    </form>
+</div>

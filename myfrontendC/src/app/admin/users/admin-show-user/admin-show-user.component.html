@@ -1,0 +1,55 @@
+<div class="container-fluid mb-5">
+    <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+        <span class="badge bg-primary fs-5 me-3"><i class="bi bi-person-badge"></i> Perfil</span>
+        <h2 class="m-0 fw-bold">Detalles del Usuario #{{ user()?.id }}</h2>
+    </div>
+
+    @if (loading()) {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando perfil...</p>
+        </div>
+    } @else if (user()) {
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h5 class="text-muted mb-1 small text-uppercase fw-bold">Nombre Completo</h5>
+                        <p class="fs-5">{{ user().name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h5 class="text-muted mb-1 small text-uppercase fw-bold">Correo Electrónico</h5>
+                        <p class="fs-5">{{ user().email }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-muted mb-1 small text-uppercase fw-bold">Rol en el Sistema</h5>
+                        <span class="badge fs-6"
+                              [class.bg-danger]="user().role === 'admin'"
+                              [class.bg-primary]="user().role !== 'admin'">
+                            {{ user().role | uppercase }}
+                        </span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-muted mb-1 small text-uppercase fw-bold">Peticiones Creadas</h5>
+                        <p class="fs-5 fw-bold text-success">{{ user().peticiones_count || 0 }}</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5 class="text-muted mb-1 small text-uppercase fw-bold">Firmas Realizadas</h5>
+                        <p class="fs-5 fw-bold text-info">{{ user().firmas_count || 0 }}</p>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="d-flex gap-2">
+                    <a routerLink="/admin/users" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver a Usuarios
+                    </a>
+                    <a [routerLink]="['/admin/users/edit', user().id]" class="btn btn-warning">
+                        <i class="bi bi-pencil-fill"></i> Editar Usuario
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

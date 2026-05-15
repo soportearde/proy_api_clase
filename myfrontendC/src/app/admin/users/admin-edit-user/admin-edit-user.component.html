@@ -1,0 +1,48 @@
+<div class="container-fluid mb-5">
+    <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+        <span class="badge bg-warning text-dark fs-5 me-3"><i class="bi bi-pencil-square"></i> Edición</span>
+        <h2 class="m-0 fw-bold">Editar Usuario #{{ id() }}</h2>
+    </div>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="card shadow-sm border-0 p-4">
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Nombre Completo</label>
+                <input formControlName="name" type="text" class="form-control">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Correo Electrónico</label>
+                <input formControlName="email" type="email" class="form-control">
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Rol del Sistema</label>
+                <select formControlName="role" class="form-select border-primary">
+                    <option value="user">Usuario normal (user)</option>
+                    <option value="admin">Administrador (admin)</option>
+                </select>
+                <div class="form-text text-danger">Precaución: Dar rol de administrador da acceso total al panel.</div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Nueva Contraseña <span class="text-muted fw-normal">(Opcional)</span></label>
+                <input formControlName="password" type="password" class="form-control"
+                       placeholder="Dejar en blanco para mantener la actual">
+                <div class="form-text">Si escribes algo aquí, sobreescribirá su contraseña actual. Mínimo 6 caracteres.</div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <div class="d-flex justify-content-end gap-2">
+            <a routerLink="/admin/users" class="btn btn-outline-dark">Cancelar</a>
+            <button type="submit" [disabled]="userForm.invalid || loading()" class="btn btn-success px-4 fw-bold">
+                @if (loading()) { <span>Guardando...</span> } @else { <span>Guardar Cambios</span> }
+            </button>
+        </div>
+
+    </form>
+</div>

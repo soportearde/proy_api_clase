@@ -1,0 +1,5 @@
+.navbar-search {
+    min-inline-size: 240px;
+    max-inline-size: 360px;
+    flex: 1;
+}

@@ -1,0 +1,35 @@
+<div class="d-flex admin-shell">
+
+    <div class="bg-dark text-white p-3 d-flex flex-column shadow admin-sidebar">
+
+        <h3 class="mb-4 text-center fw-bold text-uppercase border-bottom pb-3 mt-2">Panel Admin</h3>
+
+        <ul class="nav nav-pills flex-column mb-auto gap-2">
+            <li class="nav-item">
+                <a routerLink="/admin/peticiones" routerLinkActive="active" class="nav-link text-white">
+                    <i class="bi bi-card-list me-2"></i> Peticiones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a routerLink="/admin/users" routerLinkActive="active" class="nav-link text-white">
+                    <i class="bi bi-people me-2"></i> Usuarios
+                </a>
+            </li>
+        </ul>
+
+        <hr>
+
+        <a routerLink="/" class="btn btn-outline-light mt-auto">
+            <i class="bi bi-box-arrow-left me-2"></i> Salir al panel público
+        </a>
+    </div>
+
+    <div class="flex-grow-1 bg-light">
+        <div class="p-4">
+
+            <router-outlet></router-outlet>
+
+        </div>
+    </div>
+
+</div>

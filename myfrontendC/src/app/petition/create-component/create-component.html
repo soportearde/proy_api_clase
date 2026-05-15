@@ -1,0 +1,56 @@
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <h1 class="mb-4 text-center">Crear una petición</h1>
+
+            @if (errorMessage()) {
+                <div class="alert alert-danger">{{ errorMessage() }}</div>
+            }
+
+            <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+
+                <div class="mb-3">
+                    <label class="form-label">Título de la petición</label>
+                    <input formControlName="title" type="text" class="form-control" placeholder="Título" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Descripción</label>
+                    <textarea formControlName="description" class="form-control" rows="6" placeholder="Descripción" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Dirigida a</label>
+                    <input formControlName="destinatary" type="text" class="form-control" placeholder="Ej. Ministerio de Educación" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Categoría</label>
+                    <select formControlName="category" class="form-select" required>
+                        <option value="">Selecciona una categoría</option>
+                        @for (cat of categories; track cat.id) {
+                            <option [value]="cat.id">{{ cat.name }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Imagen (obligatoria)</label>
+                    <input type="file" class="form-control" (change)="onFileSelected($event)" multiple accept="image/*">
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a routerLink="/petitions" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit"
+                            [disabled]="itemForm.invalid || loading() || filesToUpload.length === 0"
+                            class="btn btn-danger">
+                        @if (loading()) { Guardando... } @else { Publicar petición }
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

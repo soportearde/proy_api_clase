@@ -1,0 +1,117 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* IMPORTANTE: importamos Bootstrap aquí para que TODO lo que escribamos
+   debajo se aplique DESPUÉS de las reglas de Bootstrap (orden de cascada).
+   Así nuestras variables ganan sin necesidad de !important en :root. */
+@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
+
+/* ============================================================
+   PALETA GLOBAL
+   - success (verde): #008001
+   - primary (azul):  se mantiene el azul Bootstrap (#0d6efd)
+   ============================================================
+   IMPORTANTE: Bootstrap se carga DESPUÉS de este CSS desde el CDN
+   en index.html, por eso machacaría cualquier override por
+   especificidad de :root. La solución es:
+   1) Sobrescribir variables del propio componente (.btn-success
+      define sus PROPIAS --bs-btn-bg, etc — esas ganan a :root).
+   2) Forzar las propiedades finales con !important.
+   3) Cargar este archivo TAMBIÉN como atributo style en html/body
+      para que las variables :root ganen por orden de cascada.
+*/
+
+/* Variables Bootstrap globales (success → verde personalizado) */
+html,
+:root,
+:root[data-bs-theme="light"],
+:root[data-bs-theme="dark"],
+body {
+    --bs-success: #008001 !important;
+    --bs-success-rgb: 0, 128, 1 !important;
+    --bs-success-bg-subtle: #d9f0d9 !important;
+    --bs-success-border-subtle: #008001 !important;
+    --bs-success-text-emphasis: #008001 !important;
+}
+
+/* ============== Botón sólido success ============== */
+.btn-success {
+    --bs-btn-color: #fff !important;
+    --bs-btn-bg: #008001 !important;
+    --bs-btn-border-color: #008001 !important;
+    --bs-btn-hover-color: #fff !important;
+    --bs-btn-hover-bg: #006a01 !important;
+    --bs-btn-hover-border-color: #006a01 !important;
+    --bs-btn-focus-shadow-rgb: 0, 128, 1 !important;
+    --bs-btn-active-color: #fff !important;
+    --bs-btn-active-bg: #006a01 !important;
+    --bs-btn-active-border-color: #006a01 !important;
+    --bs-btn-disabled-color: #fff !important;
+    --bs-btn-disabled-bg: #008001 !important;
+    --bs-btn-disabled-border-color: #008001 !important;
+    background-color: #008001 !important;
+    border-color: #008001 !important;
+    color: #fff !important;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active,
+.btn-success:disabled,
+.btn-success.disabled {
+    background-color: #006a01 !important;
+    border-color: #006a01 !important;
+    color: #fff !important;
+}
+
+/* ============== Botón outline success ============== */
+.btn-outline-success {
+    --bs-btn-color: #008001 !important;
+    --bs-btn-border-color: #008001 !important;
+    --bs-btn-hover-color: #fff !important;
+    --bs-btn-hover-bg: #008001 !important;
+    --bs-btn-hover-border-color: #008001 !important;
+    --bs-btn-active-color: #fff !important;
+    --bs-btn-active-bg: #008001 !important;
+    --bs-btn-active-border-color: #008001 !important;
+    color: #008001 !important;
+    border-color: #008001 !important;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:active,
+.btn-outline-success.active {
+    background-color: #008001 !important;
+    border-color: #008001 !important;
+    color: #fff !important;
+}
+
+/* ============== Utilidades success ============== */
+.bg-success,
+.badge.bg-success {
+    background-color: #008001 !important;
+    color: #fff !important;
+}
+
+.text-success {
+    color: #008001 !important;
+}
+
+.border-success {
+    border-color: #008001 !important;
+}
+
+.spinner-border.text-success,
+.link-success {
+    color: #008001 !important;
+}
+
+/* Alertas success */
+.alert-success {
+    --bs-alert-color: #fff !important;
+    --bs-alert-bg: #008001 !important;
+    --bs-alert-border-color: #006a01 !important;
+    background-color: #008001 !important;
+    border-color: #006a01 !important;
+    color: #fff !important;
+}

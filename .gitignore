@@ -1,0 +1,73 @@
+# Carpetas pesadas que no van al repo
+node_modules/
+vendor/
+dist/
+build/
+.angular/
+.cache/
+
+# Archivos de entorno (con credenciales)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+storage/logs/*.log
+
+# Storage de Laravel (archivos subidos por usuarios)
+mybackendC/storage/app/public/*
+!mybackendC/storage/app/public/.gitkeep
+mybackendC/storage/framework/cache/*
+!mybackendC/storage/framework/cache/.gitkeep
+mybackendC/storage/framework/sessions/*
+!mybackendC/storage/framework/sessions/.gitkeep
+mybackendC/storage/framework/views/*
+!mybackendC/storage/framework/views/.gitkeep
+mybackendC/storage/framework/testing/*
+!mybackendC/storage/framework/testing/.gitkeep
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.suo
+*.user
+*.sln.docstates
+
+# SO
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Archivos temporales de Office
+~$*
+
+# Archivos comprimidos del proyecto (no se suben al repo)
+*.zip
+*.rar
+*.tar
+*.7z
+
+# Videos pesados
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Volcados de base de datos (mejor no subir el SQL completo)
+*.sql
+
+# Carpeta de Claude / herramientas IA
+.claude/
+.cursor/
+
+# PHP
+mybackendC/.phpunit.result.cache
+mybackendC/Homestead.json
+mybackendC/Homestead.yaml
+mybackendC/auth.json
